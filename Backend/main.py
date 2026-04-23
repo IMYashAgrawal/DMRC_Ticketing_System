@@ -1,32 +1,23 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from flask import Flask, jsonify
+from flask_cors import CORS
 
-from Module_1_User_Management.router import router as module1_router
-from Module_2_Route_Navigator.router import router as module2_router
-from Module_3_Face_Gate_Authentication.router import router as module3_router
-from Module_4_Wallet_Engine.router import router as module4_router
+from Module_1_User_Management.router import module1
+from Module_2_Route_Navigator.router import module2
+from Module_3_Face_Auth.router import module3
+from Module_4_Wallet_Engine.router import module4
 
-app = FastAPI(
-    title="DMRC Smart Ticketing System API",
-    description="Backend API combining MFAS and Smart Metro Navigator capabilities",
-    version="1.0.0"
-)
+app = Flask(__name__)
+CORS(app)  # Allow all origins (restrict in production)
 
-# Configure CORS for Frontend communication
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], # Expand to precise frontend URL in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Register Module Routers
-app.include_router(module1_router, prefix="/api/v1/auth", tags=["User Management & Bio-Enrollment"])
-app.include_router(module2_router, prefix="/api/v1/route", tags=["Route Navigator"])
-app.include_router(module3_router, prefix="/api/v1/gate", tags=["Face-Gate Authentication"])
-app.include_router(module4_router, prefix="/api/v1/wallet", tags=["Wallet Engine"])
+# Register Blueprints
+app.register_blueprint(module1, url_prefix="/api/v1/auth")
+app.register_blueprint(module2, url_prefix="/api/v1/route")
+app.register_blueprint(module3, url_prefix="/api/v1/gate")
+app.register_blueprint(module4, url_prefix="/api/v1/wallet")
 
 @app.get("/")
-def read_root():
-    return {"status": "ok", "message": "DMRC Smart Ticketing Backend is running!"}
+def index():
+    return jsonify({"status": "ok", "message": "DMRC Smart Ticketing Backend is running!"})
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=8000)
